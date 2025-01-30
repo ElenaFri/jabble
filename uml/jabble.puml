@@ -1,0 +1,44 @@
+@startuml Jabble
+
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+
+class Jabble
+{
+    + {static} main(args: String[])
+}
+
+package model {
+    class Animal {
+
+    }
+
+    class Badger extends Animal {
+
+    }
+
+    class Bear extends Animal {
+
+    }
+}
+
+package controller {
+    class AnimalController {
+
+    }
+}
+
+package view {
+    class AnimalView {
+
+    }
+}
+
+Jabble ...> view
+AnimalView "1" *-> "1\n - _manager_" AnimalController
+AnimalView ..> Animal
+AnimalController "1" *--> "* - _animals" Animal : manages
+
+@enduml
