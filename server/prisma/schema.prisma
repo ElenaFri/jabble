@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,8 +8,47 @@ datasource db {
 }
 
 model Player {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int      @id @default(1)
+  name        String   @unique @default("Badger")
   score       Int      @default(0)
   animalsMet  Int      @default(0)
+
+  hand        Tile[]   @relation("PlayerHand")
+  animals     Animal[] @relation("PlayerAnimals")
+}
+
+model Animal {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  speciesId   Int
+
+  species     Species  @relation(fields: [speciesId], references: [id])
+
+  playerId    Int?
+  player      Player?  @relation("PlayerAnimals", fields: [playerId], references: [id])
+}
+
+model Species {
+  id       Int      @id @default(autoincrement())
+  name     String   @unique
+  animals  Animal[]
+}
+
+model Tile {
+  id         Int      @id @default(autoincrement())
+  letter     String
+  value      Int
+
+  wordId     Int?
+  word       Word?    @relation("WordTiles", fields: [wordId], references: [id])
+
+  playerId   Int?
+  player     Player?  @relation("PlayerHand", fields: [playerId], references: [id])
+}
+
+model Word {
+  id      Int     @id @default(autoincrement())
+  isValid Boolean
+
+  word    Tile[]  @relation("WordTiles")
 }
