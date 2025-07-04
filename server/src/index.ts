@@ -33,6 +33,17 @@ app.route('/badger')
     .get(player.get)
     .patch(player.update);
 
+app.route('/badger/hand')
+    .get(player.get_hand)
+    .put(player.init_hand)
+    .post(player.add_tiles);
+
+app.route('/badger/hand/:tileId')
+    .delete(player.remove_tile);
+
+app.route('/badger/animals')
+    .get(player.get_animals);
+
 app.route('/animals')
     .get(animal.get_all);
 

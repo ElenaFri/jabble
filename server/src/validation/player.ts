@@ -4,7 +4,8 @@ import {
     refine,
     union,
     string,
-    number
+    number,
+    array,
 } from 'superstruct';
 import { isInt } from 'validator';
 
@@ -16,7 +17,7 @@ const IntLike = refine(
 
 export const PlayerUpdateData = object({
     score: optional(IntLike),
-    animalsMet: optional(IntLike),
+    animalIdsToAdd: optional(array(number())),
 });
 
 export const PlayerGetAllQuery = object({
