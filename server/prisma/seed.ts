@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const speciesNames = ['Squirrel', 'Wolf', 'Bear', 'Mole', 'Woodpecker'];
+const speciesNames = ['Fox', 'Squirrel', 'Wolf', 'Bear', 'Mole', 'Woodpecker', 'Butterfly', 'Trout'];
 
 const animalNames = [
     'Alfred', 'Baxter', 'Charlie', 'Daisy', 'Elliot', 'Fiona', 'Gus', 'Hazel', 'Ivy', 'Jack',
@@ -61,13 +61,20 @@ async function main() {
     });
     console.log(`Player created or found: ${player.name} (id=${player.id})`);
 
+    // Empty Badger's hand
+    await prisma.tile.updateMany({
+        where: { playerId: player.id },
+        data: { playerId: null },
+    });
+    console.log(`All tiles return to bag.`);
+
     // Create species (only once)
     const speciesCreated: any[] = [];
     for (const name of speciesNames) {
         let species = await prisma.species.findUnique({ where: { name } });
         if (!species) {
             species = await prisma.species.create({ data: { name } });
-            console.log(`Created species: ${name}`);
+            console.log(`Created species: ${name}.`);
         }
         speciesCreated.push(species);
     }
