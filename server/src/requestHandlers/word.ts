@@ -1,6 +1,6 @@
 import { prisma } from '../db';
 import type { Request, Response } from 'express';
-import { assert } from 'superstruct';
+import {assert, StructError} from 'superstruct';
 
 import { WordCreateData, WordIdParams, WordGetAllQuery } from '../validation/word';
 import { DICTIONARY } from '../../prisma/data/dictionary';
@@ -24,26 +24,32 @@ export async function get_all(req: Request, res: Response) {
 export async function add_one(req: Request, res: Response) {
     try {
         assert(req.body, WordCreateData);
-
-        const id = Number(req.params.wordId);
         const { isValid, tileIds } = req.body;
 
-        const updated = await prisma.word.update({
-            where: { id },
+        const count = await prisma.tile.count({
+            where: { id: { in: tileIds.map(id => Number(id)) } }
+        });
+        if (count !== tileIds.length) {
+            res.status(404).json({ message: 'One or more tile IDs not found' });
+            return;
+        }
+
+        const word = await prisma.word.create({
             data: {
                 isValid,
                 word: {
-                    connect: tileIds.map((tileId) => ({ id: Number(tileId) })),
-                },
+                    connect: tileIds.map(id => ({ id: Number(id) }))
+                }
             },
-            include: {
-                word: true,
-            },
+            include: { word: true }
         });
 
-        res.json(updated);
-    } catch (error) {
-        console.error('Error updating word:', error);
+        res.status(201).json(word);
+    } catch (err: any) {
+        if (err instanceof StructError) {
+            res.status(400).json({ message: 'Invalid payload' });
+            return;
+        }
         res.status(500).json({ message: 'Internal server error' });
     }
 }

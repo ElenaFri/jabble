@@ -52,7 +52,7 @@ app.route('/tiles')
 
 app.route('/words')
     .get(word.get_all)
-    .patch(word.add_one);
+    .post(word.add_one);
 
 app.route('/words/:wordId')
     .post(word.check);
