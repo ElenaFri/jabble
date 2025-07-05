@@ -17,3 +17,7 @@ export const WordCreateData = object({
     isValid: boolean(),
     tileIds: array(IntLike),
 });
+
+export const WordIdParams = object({
+    wordId: IntLike,
+});

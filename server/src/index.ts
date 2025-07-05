@@ -51,7 +51,11 @@ app.route('/tiles')
     .get(tile.get_all);
 
 app.route('/words')
-    .get(word.get_all);
+    .get(word.get_all)
+    .patch(word.add_one);
+
+app.route('/words/:wordId')
+    .post(word.check);
 
 // Basic root route
 app.get('/', (req: Request, res: Response) => {
