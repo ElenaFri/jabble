@@ -12,12 +12,17 @@ export async function get_all(req: Request, res: Response) {
         const words = await prisma.word.findMany({
             include: {
                 tilesOnWord: {
-                    include: { tile: true },
-                    orderBy: { position: 'asc' }
+                    include: { tile: true }
                 },
             },
         });
-        res.json(words);
+
+        const sortedWords = words.map(word => ({
+            ...word,
+            tilesOnWord: word.tilesOnWord.sort((a, b) => a.position - b.position)
+        }));
+
+        res.json(sortedWords);
     } catch (error) {
         console.error('Error fetching words:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -51,15 +56,11 @@ export async function add_one(req: Request, res: Response): Promise<void> {
             include: {
                 tilesOnWord: {
                     include: { tile: true },
-                    orderBy: { position: 'asc' },
                 },
             },
         });
 
-        await prisma.tile.updateMany({
-            where: { id: { in: ids } },
-            data: { wordId: createdWord.id },
-        });
+        createdWord.tilesOnWord.sort((a, b) => a.position - b.position);
 
         const assembled = createdWord.tilesOnWord
             .map(tow => tow.tile.letter)
@@ -94,9 +95,16 @@ export async function check(req: Request, res: Response) {
         }
 
         const assembled = word.tilesOnWord.map(tow => tow.tile.letter).join('').toUpperCase();
-        const valid = DICTIONARY.has(assembled);
+        const isValid = DICTIONARY.has(assembled);
 
-        res.json({ wordId: word.id, word: assembled, valid });
+        if (word.isValid !== isValid) {
+            await prisma.word.update({
+                where: { id },
+                data: { isValid }
+            });
+        }
+
+        res.json({ wordId: word.id, word: assembled, isValid });
     } catch (error) {
         console.error('Error checking word:', error);
         res.status(500).json({ message: 'Internal server error' });

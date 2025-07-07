@@ -39,28 +39,22 @@ model Tile {
   value       Int
   tilesOnWord TilesOnWord[]
 
-  wordId Int?
-  word   Word? @relation("WordTiles", fields: [wordId], references: [id])
-
   playerId Int?
   player   Player? @relation("PlayerHand", fields: [playerId], references: [id])
 }
 
 model Word {
   id          Int           @id @default(autoincrement())
-  isValid     Boolean
+  isValid     Boolean?
   tilesOnWord TilesOnWord[]
-
-  word Tile[] @relation("WordTiles")
 }
 
 model TilesOnWord {
+  id       Int @id @default(autoincrement())
   wordId   Int
   tileId   Int
   position Int
 
   word Word @relation(fields: [wordId], references: [id])
   tile Tile @relation(fields: [tileId], references: [id])
-
-  @@id([wordId, tileId])
 }

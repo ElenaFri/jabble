@@ -5,7 +5,8 @@ import {
     refine,
     union,
     string,
-    number
+    number,
+    optional,
 } from 'superstruct';
 import { isInt } from 'validator';
 
@@ -14,7 +15,7 @@ const IntLike = refine(union([string(), number()]), 'int', (value) => isInt(Stri
 export const WordGetAllQuery = object({});
 
 export const WordCreateData = object({
-    isValid: boolean(),
+    isValid: optional(boolean()),
     tileIds: array(IntLike),
 });
 
