@@ -2,8 +2,7 @@
 CREATE TABLE "Player" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT DEFAULT 1,
     "name" TEXT NOT NULL DEFAULT 'Badger',
-    "score" INTEGER NOT NULL DEFAULT 0,
-    "animalsMet" INTEGER NOT NULL DEFAULT 0
+    "score" INTEGER NOT NULL DEFAULT 0
 );
 
 -- CreateTable
@@ -27,16 +26,24 @@ CREATE TABLE "Tile" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "letter" TEXT NOT NULL,
     "value" INTEGER NOT NULL,
-    "wordId" INTEGER,
     "playerId" INTEGER,
-    CONSTRAINT "Tile_wordId_fkey" FOREIGN KEY ("wordId") REFERENCES "Word" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Tile_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "Player" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Word" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "isValid" BOOLEAN NOT NULL
+    "isValid" BOOLEAN
+);
+
+-- CreateTable
+CREATE TABLE "TilesOnWord" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "wordId" INTEGER NOT NULL,
+    "tileId" INTEGER NOT NULL,
+    "position" INTEGER NOT NULL,
+    CONSTRAINT "TilesOnWord_wordId_fkey" FOREIGN KEY ("wordId") REFERENCES "Word" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "TilesOnWord_tileId_fkey" FOREIGN KEY ("tileId") REFERENCES "Tile" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateIndex
