@@ -16,12 +16,14 @@ The following routes are supported:
   - `/tiles` returns all existing tiles
   - `/animals` returns all existing animals
   - `/words` returns all words that have been placed
+  - `/words/:wordId` looks up the word in the dictionary
 - DELETE :
   - `/badger/hand/:tileId` removes a tile by its ID from Badger's hand
 - PATCH :
   - `/badger` updates Badger's info (namely animals they meet, and the score)
 - POST :
   - `/badger/hand` adds one or more tiles to the hand
+  - `/words` records a new word (which may be valid or not)
 - PUT :
   - `/badger/hand` inits hand (like in the beginning of the game or if Badger wants to change all tiles)
 

@@ -8,46 +8,59 @@ datasource db {
 }
 
 model Player {
-  id          Int      @id @default(1)
-  name        String   @unique @default("Badger")
-  score       Int      @default(0)
+  id    Int    @id @default(1)
+  name  String @unique @default("Badger")
+  score Int    @default(0)
 
-  hand        Tile[]   @relation("PlayerHand")
-  animals     Animal[] @relation("PlayerAnimals")
+  hand    Tile[]   @relation("PlayerHand")
+  animals Animal[] @relation("PlayerAnimals")
 }
 
 model Animal {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  speciesId   Int
+  id        Int    @id @default(autoincrement())
+  name      String @unique
+  speciesId Int
 
-  species     Species  @relation(fields: [speciesId], references: [id])
+  species Species @relation(fields: [speciesId], references: [id])
 
-  playerId    Int?
-  player      Player?  @relation("PlayerAnimals", fields: [playerId], references: [id])
+  playerId Int?
+  player   Player? @relation("PlayerAnimals", fields: [playerId], references: [id])
 }
 
 model Species {
-  id       Int      @id @default(autoincrement())
-  name     String   @unique
-  animals  Animal[]
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  animals Animal[]
 }
 
 model Tile {
-  id         Int      @id @default(autoincrement())
-  letter     String
-  value      Int
+  id          Int           @id @default(autoincrement())
+  letter      String
+  value       Int
+  tilesOnWord TilesOnWord[]
 
-  wordId     Int?
-  word       Word?    @relation("WordTiles", fields: [wordId], references: [id])
+  wordId Int?
+  word   Word? @relation("WordTiles", fields: [wordId], references: [id])
 
-  playerId   Int?
-  player     Player?  @relation("PlayerHand", fields: [playerId], references: [id])
+  playerId Int?
+  player   Player? @relation("PlayerHand", fields: [playerId], references: [id])
 }
 
 model Word {
-  id      Int     @id @default(autoincrement())
-  isValid Boolean
+  id          Int           @id @default(autoincrement())
+  isValid     Boolean
+  tilesOnWord TilesOnWord[]
 
-  word    Tile[]  @relation("WordTiles")
+  word Tile[] @relation("WordTiles")
+}
+
+model TilesOnWord {
+  wordId   Int
+  tileId   Int
+  position Int
+
+  word Word @relation(fields: [wordId], references: [id])
+  tile Tile @relation(fields: [tileId], references: [id])
+
+  @@id([wordId, tileId])
 }

@@ -28,7 +28,7 @@ const validateParams = (req: Request, res: Response, next: NextFunction) => {
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Listing routes
+// Routes
 app.route('/badger')
     .get(player.get)
     .patch(player.update);
@@ -55,7 +55,7 @@ app.route('/words')
     .post(word.add_one);
 
 app.route('/words/:wordId')
-    .post(word.check);
+    .get(word.check);
 
 // Basic root route
 app.get('/', (req: Request, res: Response) => {

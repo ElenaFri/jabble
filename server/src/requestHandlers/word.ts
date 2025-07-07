@@ -11,7 +11,10 @@ export async function get_all(req: Request, res: Response) {
     try {
         const words = await prisma.word.findMany({
             include: {
-                word: true,
+                tilesOnWord: {
+                    include: { tile: true },
+                    orderBy: { position: 'asc' }
+                },
             },
         });
         res.json(words);
@@ -21,35 +24,50 @@ export async function get_all(req: Request, res: Response) {
     }
 }
 
-export async function add_one(req: Request, res: Response) {
+export async function add_one(req: Request, res: Response): Promise<void> {
     try {
         assert(req.body, WordCreateData);
         const { isValid, tileIds } = req.body;
+        const ids = tileIds.map(id => Number(id));
 
-        const count = await prisma.tile.count({
-            where: { id: { in: tileIds.map(id => Number(id)) } }
+        const foundCount = await prisma.tile.count({
+            where: { id: { in: ids } },
         });
-        if (count !== tileIds.length) {
+        if (foundCount !== ids.length) {
             res.status(404).json({ message: 'One or more tile IDs not found' });
             return;
         }
 
-        const word = await prisma.word.create({
+        const createdWord = await prisma.word.create({
             data: {
                 isValid,
-                word: {
-                    connect: tileIds.map(id => ({ id: Number(id) }))
-                }
+                tilesOnWord: {
+                    create: ids.map((tileId, index) => ({
+                        tile: { connect: { id: tileId } },
+                        position: index,
+                    })),
+                },
             },
-            include: { word: true }
+            include: {
+                tilesOnWord: {
+                    include: { tile: true },
+                    orderBy: { position: 'asc' },
+                },
+            },
         });
 
-        res.status(201).json(word);
-    } catch (err: any) {
-        if (err instanceof StructError) {
-            res.status(400).json({ message: 'Invalid payload' });
-            return;
-        }
+        await prisma.tile.updateMany({
+            where: { id: { in: ids } },
+            data: { wordId: createdWord.id },
+        });
+
+        const assembled = createdWord.tilesOnWord
+            .map(tow => tow.tile.letter)
+            .join('')
+            .toUpperCase();
+
+        res.status(201).json({ id: createdWord.id, word: assembled, isValid: createdWord.isValid });
+    } catch (err) {
         res.status(500).json({ message: 'Internal server error' });
     }
 }
@@ -63,7 +81,10 @@ export async function check(req: Request, res: Response) {
         const word = await prisma.word.findUnique({
             where: { id },
             include: {
-                word: true,
+                tilesOnWord: {
+                    include: { tile: true },
+                    orderBy: { position: 'asc' },
+                },
             },
         });
 
@@ -72,7 +93,7 @@ export async function check(req: Request, res: Response) {
             return;
         }
 
-        const assembled = word.word.map(tile => tile.letter).join('').toUpperCase();
+        const assembled = word.tilesOnWord.map(tow => tow.tile.letter).join('').toUpperCase();
         const valid = DICTIONARY.has(assembled);
 
         res.json({ wordId: word.id, word: assembled, valid });
