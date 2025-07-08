@@ -2,7 +2,9 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const speciesNames = ['Fox', 'Squirrel', 'Wolf', 'Bear', 'Mole', 'Woodpecker', 'Butterfly', 'Trout'];
+const speciesNames = [
+    'Fox', 'Squirrel', 'Wolf', 'Bear', 'Mole', 'Woodpecker', 'Butterfly', 'Trout'
+];
 
 const animalNames = [
     'Alfred', 'Baxter', 'Charlie', 'Daisy', 'Elliot', 'Fiona', 'Gus', 'Hazel', 'Ivy', 'Jack',
@@ -42,80 +44,81 @@ const tilesDistribution = [
     { letter: '', value: 0, count: 2 },
 ];
 
-// Utility function to shuffle array (Fisher-Yates algorithm)
+// Fisher-Yates shuffle : utility function
 function shuffleArray<T>(array: T[]): T[] {
     const arr = [...array];
-    for (let i = arr.length -1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i+1));
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
 }
 
 async function main() {
-    // Create Badger (only once)
+    // Delete old game state
+    await prisma.tilesOnWord.deleteMany();
+    await prisma.placedTile.deleteMany();
+    await prisma.word.deleteMany();
+    await prisma.board.deleteMany();
+    console.log('✔ Cleared old game state (words, board, tile links).');
+
+    // Ensure Badger exists
     const player = await prisma.player.upsert({
         where: { name: 'Badger' },
         update: {},
         create: { name: 'Badger' },
     });
-    console.log(`Player created or found: ${player.name} (id=${player.id})`);
+    console.log(`✔ Player: ${player.name}`);
 
-    // Empty Badger's hand
+    // Re-init Badger's hand
     await prisma.tile.updateMany({
         where: { playerId: player.id },
         data: { playerId: null },
     });
-    console.log(`All tiles return to bag.`);
 
-    // Create species (only once)
-    const speciesCreated: any[] = [];
+    // Ensure species exist
+    const speciesCreated = [];
     for (const name of speciesNames) {
-        let species = await prisma.species.findUnique({ where: { name } });
-        if (!species) {
-            species = await prisma.species.create({ data: { name } });
-            console.log(`Created species: ${name}.`);
-        }
+        const species = await prisma.species.upsert({
+            where: { name },
+            update: {},
+            create: { name },
+        });
         speciesCreated.push(species);
     }
+    console.log(`✔ ${speciesCreated.length} species ensured.`);
 
-    // Create 50 animals of random species and names
+    // Recreate animals
     await prisma.animal.deleteMany();
-    console.log('All previous animals deleted.');
+    const shuffledNames = shuffleArray(animalNames).slice(0, 50);
+    const animals = shuffledNames.map(name => ({
+        name,
+        speciesId: speciesCreated[Math.floor(Math.random() * speciesCreated.length)].id,
+    }));
+    await prisma.animal.createMany({ data: animals });
+    console.log(`✔ ${animals.length} animals created.`);
 
-    const shuffledAnimalNames = shuffleArray(animalNames).slice(0, 50);
-
-    const animalsData = shuffledAnimalNames.map((name) => {
-        const species = speciesCreated[Math.floor(Math.random() * speciesCreated.length)];
-        return {
-            name,
-            speciesId: species.id,
-        };
-    });
-
-    await prisma.animal.createMany({ data: animalsData });
-    console.log(`Created ${animalsData.length} animals.`);
-
-    // Create tiles (only once)s
+    // Ensure tile set exists
     const tileCount = await prisma.tile.count();
     if (tileCount === 0) {
         const tilesData = tilesDistribution.flatMap(({ letter, value, count }) =>
-            Array.from({ length: count }, () => ({
-                letter,
-                value,
-            }))
+            Array.from({ length: count }, () => ({ letter, value }))
         );
         await prisma.tile.createMany({ data: tilesData });
-        console.log(`Created ${tilesData.length} tiles.`);
+        console.log(`✔ ${tilesData.length} tiles created.`);
     } else {
-        console.log('Tiles already exist, skipping creation.');
+        console.log('✔ Tiles already present.');
     }
+
+    // Create empty board
+    const board = await prisma.board.create({ data: {} });
+    console.log(`✔ Board created: id=${board.id} (${board.width}x${board.height})`);
 }
 
 main()
     .then(async () => {
         await prisma.$disconnect();
-        console.log('Seeding done.');
+        console.log('🎉 Seeding complete.');
     })
     .catch(async (e) => {
         console.error(e);

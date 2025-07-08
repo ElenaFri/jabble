@@ -39,14 +39,22 @@ model Tile {
   value       Int
   tilesOnWord TilesOnWord[]
 
-  playerId Int?
-  player   Player? @relation("PlayerHand", fields: [playerId], references: [id])
+  playerId   Int?
+  player     Player?      @relation("PlayerHand", fields: [playerId], references: [id])
+  placedTile PlacedTile[]
 }
 
 model Word {
   id          Int           @id @default(autoincrement())
   isValid     Boolean?
   tilesOnWord TilesOnWord[]
+
+  boardId Int
+  board   Board @relation(fields: [boardId], references: [id])
+
+  startX      Int
+  startY      Int
+  orientation Orientation
 }
 
 model TilesOnWord {
@@ -57,4 +65,30 @@ model TilesOnWord {
 
   word Word @relation(fields: [wordId], references: [id])
   tile Tile @relation(fields: [tileId], references: [id])
+}
+
+model Board {
+  id     Int @id @default(autoincrement())
+  width  Int @default(15)
+  height Int @default(15)
+
+  words Word[]
+  tiles PlacedTile[]
+}
+
+enum Orientation {
+  HORIZONTAL
+  VERTICAL
+}
+
+model PlacedTile {
+  id Int @id @default(autoincrement())
+  x  Int
+  y  Int
+
+  boardId Int
+  board   Board @relation(fields: [boardId], references: [id])
+
+  tileId Int
+  tile   Tile @relation(fields: [tileId], references: [id])
 }
