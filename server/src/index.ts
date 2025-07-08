@@ -10,6 +10,7 @@ import * as player from './requestHandlers/player';
 import * as animal from './requestHandlers/animal';
 import * as tile from './requestHandlers/tile';
 import * as word from './requestHandlers/word';
+import * as board from './requestHandlers/board';
 
 const app = express();
 const port = 3000;
@@ -19,6 +20,7 @@ const ReqParams = object({
     animal_id: optional(refine(string(), 'int', (value) => isInt(value))),
     tile_id: optional(refine(string(), 'int', (value) => isInt(value))),
     word_id: optional(refine(string(), 'int', (value) => isInt(value))),
+    board_id: optional(refine(string(), 'int', (value) => isInt(value))),
 });
 const validateParams = (req: Request, res: Response, next: NextFunction) => {
     assert(req.params, ReqParams);
@@ -56,6 +58,9 @@ app.route('/words')
 
 app.route('/words/:wordId')
     .get(word.check);
+
+app.route('/board')
+    .get(board.get);
 
 // Basic root route
 app.get('/', (req: Request, res: Response) => {
