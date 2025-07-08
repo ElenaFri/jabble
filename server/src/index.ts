@@ -1,10 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import express, { Request, Response, NextFunction } from 'express';
 
-import { assert, object, optional, refine, string, StructError } from 'superstruct';
+import { assert, object, optional, refine, string } from 'superstruct';
 import { isInt } from 'validator';
-
-import { HttpError } from './error';
 
 import * as player from './requestHandlers/player';
 import * as animal from './requestHandlers/animal';
@@ -22,6 +20,7 @@ const ReqParams = object({
     word_id: optional(refine(string(), 'int', (value) => isInt(value))),
     board_id: optional(refine(string(), 'int', (value) => isInt(value))),
 });
+
 const validateParams = (req: Request, res: Response, next: NextFunction) => {
     assert(req.params, ReqParams);
     next();
@@ -58,6 +57,9 @@ app.route('/words')
 
 app.route('/words/:wordId')
     .get(word.check);
+
+app.route('/words/play')
+    .post(word.place_one);
 
 app.route('/board')
     .get(board.get);

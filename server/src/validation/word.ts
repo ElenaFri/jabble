@@ -7,6 +7,7 @@ import {
     string,
     number,
     optional,
+    enums,
 } from 'superstruct';
 import { isInt } from 'validator';
 
@@ -14,9 +15,16 @@ const IntLike = refine(union([string(), number()]), 'int', (value) => isInt(Stri
 
 export const WordGetAllQuery = object({});
 
-export const WordCreateData = object({
-    isValid: optional(boolean()),
-    tileIds: array(IntLike),
+export const WordAddData = object({
+    tileIds: array(number()),
+});
+
+export const WordPlaceData = object({
+    wordId: IntLike,
+    startX: IntLike,
+    startY: IntLike,
+    orientation: enums(['HORIZONTAL', 'VERTICAL']),
+    boardId: IntLike,
 });
 
 export const WordIdParams = object({

@@ -49,12 +49,12 @@ model Word {
   isValid     Boolean?
   tilesOnWord TilesOnWord[]
 
-  boardId Int
-  board   Board @relation(fields: [boardId], references: [id])
+  boardId Int?
+  board   Board? @relation(fields: [boardId], references: [id])
 
-  startX      Int
-  startY      Int
-  orientation Orientation
+  startX      Int?
+  startY      Int?
+  orientation Orientation?
 }
 
 model TilesOnWord {
