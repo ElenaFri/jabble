@@ -25,7 +25,7 @@ The following routes are supported:
 - POST :
   - `/badger/hand` adds one or more tiles to the hand
   - `/words` records a new word (which may be valid or not)
-  - `/words/play` places a word on the board and computes the score
+  - `/words/play` places a word on the board and computes the score for Badger or the animal, respectively
 - PUT :
   - `/badger/hand` inits hand (like in the beginning of the game or if Badger wants to change all tiles)
 

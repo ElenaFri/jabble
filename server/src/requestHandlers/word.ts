@@ -181,6 +181,14 @@ export async function place_one(req: Request, res: Response) {
             }
         }
 
+        const score = await calculateScoreForWord({
+            startX: startX!,
+            startY: startY!,
+            orientation: orientation as 'HORIZONTAL' | 'VERTICAL',
+            tilesOnWord: word.tilesOnWord,
+            boardId: boardId!,
+        });
+
         await prisma.word.update({
             where: { id: wordId },
             data: {
@@ -190,28 +198,28 @@ export async function place_one(req: Request, res: Response) {
                 board: { connect: { id: boardId } },
                 player: playerId ? { connect: { id: playerId } } : undefined,
                 animal: animalId ? { connect: { id: animalId } } : undefined,
+                score,
             },
         });
 
-        const updatedWord = await prisma.word.update({
-            where: { id: wordId },
-            data: {
-                score: await calculateScoreForWord({
-                    startX: startX!,
-                    startY: startY!,
-                    orientation: orientation as 'HORIZONTAL' | 'VERTICAL',
-                    tilesOnWord: word.tilesOnWord,
-                    boardId: boardId!,
-                }),
-            },
-        });
+        if (playerId) {
+            await prisma.player.update({
+                where: { id: playerId },
+                data: { score: { increment: score } },
+            });
+        } else if (animalId) {
+            await prisma.animal.update({
+                where: { id: animalId },
+                data: { score: { increment: score } },
+            });
+        }
 
         res.status(201).json({
             wordId,
             word: result.word,
             isValid: result.isValid,
-            score: updatedWord.score,
-            message: `Word '${result.word}' placed successfully (${updatedWord.score} pts).`,
+            score,
+            message: `Word '${result.word}' placed successfully (${score} pts).`,
             playerId,
             animalId,
         });
