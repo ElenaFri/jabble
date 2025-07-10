@@ -5,7 +5,7 @@ import { assert } from 'superstruct';
 import { TileUpdateData, TileGetAllQuery } from '../validation/tile';
 
 export async function get_all(req: Request, res: Response) {
-    assert(req.query, TileGetAllQuery); // valide éventuellement les filtres
+    assert(req.query, TileGetAllQuery);
 
     try {
         const tiles = await prisma.tile.findMany();

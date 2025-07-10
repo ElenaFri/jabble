@@ -32,3 +32,5 @@ The following routes are supported:
 ## Problems
 
 As of now, Badger is the only one who manipulates tiles. A generic computer player should probably be introduced, to facilitate tile status attribution.
+
+Of course, score calculation is necessary, for both Badger and their adversaries.
