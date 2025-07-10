@@ -44,7 +44,6 @@ const tilesDistribution = [
     { letter: '', value: 0, count: 2 },
 ];
 
-// Fisher-Yates shuffle : utility function
 function shuffleArray<T>(array: T[]): T[] {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -55,12 +54,11 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 async function main() {
-    // Delete old game state
+    // Cleanup
     await prisma.tilesOnWord.deleteMany();
     await prisma.placedTile.deleteMany();
     await prisma.word.deleteMany();
-    await prisma.board.deleteMany();
-    console.log('✔ Cleared old game state (words, board, tile links).');
+    console.log('✔ Cleared previous game state (placed tiles & words)');
 
     // Ensure Badger exists
     const player = await prisma.player.upsert({
@@ -70,14 +68,14 @@ async function main() {
     });
     console.log(`✔ Player: ${player.name}`);
 
-    // Re-init Badger's hand
+    // Init Badger's hand
     await prisma.tile.updateMany({
         where: { playerId: player.id },
         data: { playerId: null },
     });
 
     // Ensure species exist
-    const speciesCreated: { id: any; }[] = [];
+    const speciesCreated: { id: any }[] = [];
     for (const name of speciesNames) {
         const species = await prisma.species.upsert({
             where: { name },
@@ -110,9 +108,40 @@ async function main() {
         console.log('✔ Tiles already present.');
     }
 
-    // Create empty board
-    const board = await prisma.board.create({ data: {} });
-    console.log(`✔ Board created: id=${board.id} (${board.width}x${board.height})`);
+    // Get or create board
+    let board = await prisma.board.findFirst();
+    if (!board) {
+        board = await prisma.board.create({ data: {} });
+        console.log(`✔ Board created: id=${board.id}`);
+
+        const bonusLayout = [
+            { x: 0, y: 0, type: 'TW' }, { x: 0, y: 7, type: 'TW' }, { x: 0, y: 14, type: 'TW' },
+            { x: 7, y: 0, type: 'TW' }, { x: 7, y: 14, type: 'TW' },
+            { x: 14, y: 0, type: 'TW' }, { x: 14, y: 7, type: 'TW' }, { x: 14, y: 14, type: 'TW' },
+            { x: 1, y: 1, type: 'DW' }, { x: 2, y: 2, type: 'DW' }, { x: 3, y: 3, type: 'DW' }, { x: 4, y: 4, type: 'DW' },
+            { x: 10, y: 10, type: 'DW' }, { x: 11, y: 11, type: 'DW' }, { x: 12, y: 12, type: 'DW' }, { x: 13, y: 13, type: 'DW' },
+            { x: 1, y: 13, type: 'DW' }, { x: 2, y: 12, type: 'DW' }, { x: 3, y: 11, type: 'DW' }, { x: 4, y: 10, type: 'DW' },
+            { x: 10, y: 4, type: 'DW' }, { x: 11, y: 3, type: 'DW' }, { x: 12, y: 2, type: 'DW' }, { x: 13, y: 1, type: 'DW' },
+            { x: 1, y: 5, type: 'TL' }, { x: 1, y: 9, type: 'TL' }, { x: 5, y: 1, type: 'TL' },
+            { x: 5, y: 5, type: 'TL' }, { x: 5, y: 9, type: 'TL' }, { x: 5, y: 13, type: 'TL' },
+            { x: 9, y: 1, type: 'TL' }, { x: 9, y: 5, type: 'TL' }, { x: 9, y: 9, type: 'TL' }, { x: 9, y: 13, type: 'TL' },
+            { x: 13, y: 5, type: 'TL' }, { x: 13, y: 9, type: 'TL' },
+            { x: 0, y: 3, type: 'DL' }, { x: 0, y: 11, type: 'DL' }, { x: 2, y: 6, type: 'DL' }, { x: 2, y: 8, type: 'DL' },
+            { x: 3, y: 0, type: 'DL' }, { x: 3, y: 7, type: 'DL' }, { x: 3, y: 14, type: 'DL' },
+            { x: 6, y: 2, type: 'DL' }, { x: 6, y: 6, type: 'DL' }, { x: 6, y: 8, type: 'DL' }, { x: 6, y: 12, type: 'DL' },
+            { x: 7, y: 3, type: 'DL' }, { x: 7, y: 11, type: 'DL' }, { x: 8, y: 2, type: 'DL' },
+            { x: 8, y: 6, type: 'DL' }, { x: 8, y: 8, type: 'DL' }, { x: 8, y: 12, type: 'DL' },
+            { x: 11, y: 0, type: 'DL' }, { x: 11, y: 7, type: 'DL' }, { x: 11, y: 14, type: 'DL' },
+            { x: 12, y: 6, type: 'DL' }, { x: 12, y: 8, type: 'DL' }, { x: 14, y: 3, type: 'DL' }, { x: 14, y: 11, type: 'DL' },
+        ];
+
+        await prisma.boardBonus.createMany({
+            data: bonusLayout.map(b => ({ ...b, boardId: board.id })),
+        });
+        console.log(`✔ ${bonusLayout.length} bonuses placed.`);
+    } else {
+        console.log(`✔ Board already exists: id=${board.id} — no changes made.`);
+    }
 }
 
 main()

@@ -21,6 +21,8 @@ export const get = async (req: Request, res: Response) => {
             },
         });
 
+        const bonuses = await prisma.boardBonus.findMany();
+
         const formattedWords = words.map(word => {
             const letters = word.tilesOnWord.map(t => t.tile.letter).join('');
             return {
@@ -32,7 +34,14 @@ export const get = async (req: Request, res: Response) => {
             };
         });
 
-        res.status(200).json({ words: formattedWords });
+        const formattedBonuses = bonuses.map(b => ({
+            x: b.x,
+            y: b.y,
+            type: b.type,
+            boardId: b.boardId
+        }));
+
+        res.status(200).json({ words: formattedWords, bonuses: formattedBonuses });
     } catch (error) {
         console.error('Error retrieving board:', error);
         res.status(500).json({ error: 'Failed to retrieve board state' });

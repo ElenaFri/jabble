@@ -82,8 +82,27 @@ model Board {
   width  Int @default(15)
   height Int @default(15)
 
-  words Word[]
-  tiles PlacedTile[]
+  words   Word[]
+  tiles   PlacedTile[]
+  bonuses BoardBonus[]
+}
+
+model BoardBonus {
+  id      Int       @id @default(autoincrement())
+  x       Int
+  y       Int
+  type    BonusType
+  boardId Int
+  board   Board     @relation(fields: [boardId], references: [id])
+
+  @@unique([boardId, x, y])
+}
+
+enum BonusType {
+  DL
+  TL
+  DW
+  TW
 }
 
 enum Orientation {
