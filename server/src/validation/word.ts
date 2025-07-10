@@ -17,6 +17,8 @@ export const WordGetAllQuery = object({});
 
 export const WordAddData = object({
     tileIds: array(number()),
+    playerId: optional(IntLike),
+    animalId: optional(IntLike),
 });
 
 export const WordPlaceData = object({
@@ -25,6 +27,8 @@ export const WordPlaceData = object({
     startY: IntLike,
     orientation: enums(['HORIZONTAL', 'VERTICAL']),
     boardId: IntLike,
+    playerId: optional(IntLike),
+    animalId: optional(IntLike),
 });
 
 export const WordIdParams = object({

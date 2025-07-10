@@ -1,6 +1,6 @@
 import { prisma } from '../db';
 import type { Request, Response } from 'express';
-import {assert, StructError} from 'superstruct';
+import { assert, StructError } from 'superstruct';
 
 import { WordAddData, WordIdParams, WordPlaceData, WordGetAllQuery } from '../validation/word';
 import { DICTIONARY } from '../../prisma/data/dictionary';
@@ -12,14 +12,16 @@ export async function get_all(req: Request, res: Response) {
         const words = await prisma.word.findMany({
             include: {
                 tilesOnWord: {
-                    include: { tile: true }
+                    include: { tile: true },
                 },
+                player: true,
+                animal: true,
             },
         });
 
-        const sortedWords = words.map(word => ({
+        const sortedWords = words.map((word) => ({
             ...word,
-            tilesOnWord: [...word.tilesOnWord].sort((a, b) => a.position - b.position)
+            tilesOnWord: [...word.tilesOnWord].sort((a, b) => a.position - b.position),
         }));
 
         res.json(sortedWords);
@@ -32,8 +34,8 @@ export async function get_all(req: Request, res: Response) {
 export async function add_one(req: Request, res: Response): Promise<void> {
     try {
         assert(req.body, WordAddData);
-        const { tileIds } = req.body;
-        const ids = tileIds.map(id => Number(id));
+        const { tileIds, playerId, animalId } = req.body;
+        const ids = tileIds.map((id) => Number(id));
 
         const foundCount = await prisma.tile.count({
             where: { id: { in: ids } },
@@ -51,6 +53,8 @@ export async function add_one(req: Request, res: Response): Promise<void> {
                         position: index,
                     })),
                 },
+                player: playerId ? { connect: { id: playerId } } : undefined,
+                animal: animalId ? { connect: { id: animalId } } : undefined,
             },
             include: {
                 tilesOnWord: {
@@ -62,7 +66,7 @@ export async function add_one(req: Request, res: Response): Promise<void> {
         createdWord.tilesOnWord.sort((a, b) => a.position - b.position);
 
         const assembled = createdWord.tilesOnWord
-            .map(tow => tow.tile.letter)
+            .map((tow) => tow.tile.letter)
             .join('')
             .toUpperCase();
 
@@ -94,13 +98,13 @@ export async function check(req: Request, res: Response) {
             return;
         }
 
-        const assembled = word.tilesOnWord.map(tow => tow.tile.letter).join('').toUpperCase();
+        const assembled = word.tilesOnWord.map((tow) => tow.tile.letter).join('').toUpperCase();
         const isValid = DICTIONARY.has(assembled);
 
         if (word.isValid !== isValid) {
             await prisma.word.update({
                 where: { id },
-                data: { isValid }
+                data: { isValid },
             });
         }
 
@@ -114,7 +118,7 @@ export async function check(req: Request, res: Response) {
 export async function place_one(req: Request, res: Response) {
     try {
         assert(req.body, WordPlaceData);
-        const { wordId, startX, startY, orientation, boardId } = req.body;
+        const { wordId, startX, startY, orientation, boardId, playerId, animalId } = req.body;
 
         const word = await prisma.word.findUnique({
             where: { id: wordId },
@@ -184,6 +188,8 @@ export async function place_one(req: Request, res: Response) {
                 startY,
                 orientation,
                 board: { connect: { id: boardId } },
+                player: playerId ? { connect: { id: playerId } } : undefined,
+                animal: animalId ? { connect: { id: animalId } } : undefined,
             },
         });
 
@@ -192,6 +198,8 @@ export async function place_one(req: Request, res: Response) {
             word: result.word,
             isValid: true,
             message: `Word '${result.word}' placed successfully.`,
+            playerId,
+            animalId,
         });
     } catch (err) {
         console.error('Error placing word:', err);
