@@ -193,11 +193,25 @@ export async function place_one(req: Request, res: Response) {
             },
         });
 
+        const updatedWord = await prisma.word.update({
+            where: { id: wordId },
+            data: {
+                score: await calculateScoreForWord({
+                    startX: startX!,
+                    startY: startY!,
+                    orientation: orientation as 'HORIZONTAL' | 'VERTICAL',
+                    tilesOnWord: word.tilesOnWord,
+                    boardId: boardId!,
+                }),
+            },
+        });
+
         res.status(201).json({
             wordId,
             word: result.word,
-            isValid: true,
-            message: `Word '${result.word}' placed successfully.`,
+            isValid: result.isValid,
+            score: updatedWord.score,
+            message: `Word '${result.word}' placed successfully (${updatedWord.score} pts).`,
             playerId,
             animalId,
         });
@@ -218,4 +232,54 @@ function createMemoryResponse(): Response & { jsonBody?: any } {
         return res;
     };
     return res;
+}
+
+async function calculateScoreForWord(word: {
+    startX: number;
+    startY: number;
+    orientation: 'HORIZONTAL' | 'VERTICAL';
+    tilesOnWord: {
+        tile: { id: number; value: number };
+    }[];
+    boardId: number;
+}) {
+    const { startX, startY, orientation, tilesOnWord, boardId } = word;
+
+    const bonuses = await prisma.boardBonus.findMany({
+        where: { boardId },
+    });
+
+    let wordMultiplier = 1;
+    let totalPoints = 0;
+
+    for (let i = 0; i < tilesOnWord.length; i++) {
+        const x = orientation === 'HORIZONTAL' ? startX + i : startX;
+        const y = orientation === 'VERTICAL' ? startY + i : startY;
+        const tileValue = tilesOnWord[i].tile.value;
+
+        const bonus = bonuses.find((b) => b.x === x && b.y === y);
+
+        if (bonus) {
+            switch (bonus.type) {
+                case 'DL':
+                    totalPoints += tileValue * 2;
+                    break;
+                case 'TL':
+                    totalPoints += tileValue * 3;
+                    break;
+                case 'DW':
+                    totalPoints += tileValue;
+                    wordMultiplier *= 2;
+                    break;
+                case 'TW':
+                    totalPoints += tileValue;
+                    wordMultiplier *= 3;
+                    break;
+            }
+        } else {
+            totalPoints += tileValue;
+        }
+    }
+
+    return totalPoints * wordMultiplier;
 }

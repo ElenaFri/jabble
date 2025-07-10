@@ -119,5 +119,6 @@ model PlacedTile {
   board   Board @relation(fields: [boardId], references: [id])
 
   tileId Int
-  tile   Tile @relation(fields: [tileId], references: [id])
+  tile   Tile    @relation(fields: [tileId], references: [id])
+  isNew  Boolean @default(true)
 }
