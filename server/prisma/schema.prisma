@@ -14,17 +14,20 @@ model Player {
 
   hand    Tile[]   @relation("PlayerHand")
   animals Animal[] @relation("PlayerAnimals")
+  Word    Word[]   @relation("PlayerWords")
 }
 
 model Animal {
   id        Int    @id @default(autoincrement())
   name      String @unique
   speciesId Int
+  score     Int    @default(0)
 
   species Species @relation(fields: [speciesId], references: [id])
 
   playerId Int?
   player   Player? @relation("PlayerAnimals", fields: [playerId], references: [id])
+  Word     Word[]  @relation("AnimalWords")
 }
 
 model Species {
@@ -55,6 +58,13 @@ model Word {
   startX      Int?
   startY      Int?
   orientation Orientation?
+
+  score Int?
+
+  playerId Int?
+  player   Player? @relation("PlayerWords", fields: [playerId], references: [id])
+  animalId Int?
+  animal   Animal? @relation("AnimalWords", fields: [animalId], references: [id])
 }
 
 model TilesOnWord {

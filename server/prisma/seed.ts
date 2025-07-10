@@ -77,7 +77,7 @@ async function main() {
     });
 
     // Ensure species exist
-    const speciesCreated = [];
+    const speciesCreated: { id: any; }[] = [];
     for (const name of speciesNames) {
         const species = await prisma.species.upsert({
             where: { name },
