@@ -12,9 +12,11 @@ model Player {
   name  String @unique @default("Badger")
   score Int    @default(0)
 
-  hand    Tile[]   @relation("PlayerHand")
-  animals Animal[] @relation("PlayerAnimals")
-  Word    Word[]   @relation("PlayerWords")
+  hand     Tile[]   @relation("PlayerHand")
+  animals  Animal[] @relation("PlayerAnimals")
+  words    Word[]   @relation("PlayerWords")
+  games    Game[]   @relation("PlayerGame")
+  gamesWon Game[]   @relation("GameWinnerPlayer")
 }
 
 model Animal {
@@ -25,9 +27,11 @@ model Animal {
 
   species Species @relation(fields: [speciesId], references: [id])
 
-  playerId Int?
-  player   Player? @relation("PlayerAnimals", fields: [playerId], references: [id])
-  Word     Word[]  @relation("AnimalWords")
+  playerId      Int?
+  player        Player?        @relation("PlayerAnimals", fields: [playerId], references: [id])
+  words         Word[]         @relation("AnimalWords")
+  animalsInGame AnimalInGame[]
+  gamesWon      Game[]         @relation("GameWinnerAnimal")
 }
 
 model Species {
@@ -42,9 +46,9 @@ model Tile {
   value       Int
   tilesOnWord TilesOnWord[]
 
-  playerId   Int?
-  player     Player?      @relation("PlayerHand", fields: [playerId], references: [id])
-  placedTile PlacedTile[]
+  playerId    Int?
+  player      Player?      @relation("PlayerHand", fields: [playerId], references: [id])
+  placedTiles PlacedTile[]
 }
 
 model Word {
@@ -65,6 +69,8 @@ model Word {
   player   Player? @relation("PlayerWords", fields: [playerId], references: [id])
   animalId Int?
   animal   Animal? @relation("AnimalWords", fields: [animalId], references: [id])
+  game     Game?   @relation(fields: [gameId], references: [id])
+  gameId   Int?
 }
 
 model TilesOnWord {
@@ -85,6 +91,7 @@ model Board {
   words   Word[]
   tiles   PlacedTile[]
   bonuses BoardBonus[]
+  games   Game[]
 }
 
 model BoardBonus {
@@ -121,4 +128,38 @@ model PlacedTile {
   tileId Int
   tile   Tile    @relation(fields: [tileId], references: [id])
   isNew  Boolean @default(true)
+}
+
+model Game {
+  id        Int       @id @default(autoincrement())
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  isOver    Boolean   @default(false)
+
+  playerId Int
+  player   Player @relation("PlayerGame", fields: [playerId], references: [id])
+
+  board   Board @relation(fields: [boardId], references: [id])
+  boardId Int
+
+  animals AnimalInGame[]
+  words   Word[]
+
+  winnerPlayerId Int?
+  winnerPlayer   Player? @relation("GameWinnerPlayer", fields: [winnerPlayerId], references: [id])
+
+  winnerAnimalId Int?
+  winnerAnimal   Animal? @relation("GameWinnerAnimal", fields: [winnerAnimalId], references: [id])
+}
+
+model AnimalInGame {
+  id       Int @id @default(autoincrement())
+  gameId   Int
+  animalId Int
+  score    Int @default(0)
+
+  game   Game   @relation(fields: [gameId], references: [id])
+  animal Animal @relation(fields: [animalId], references: [id])
+
+  @@unique([gameId, animalId])
 }
