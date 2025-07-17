@@ -9,6 +9,7 @@ import * as animal from './requestHandlers/animal';
 import * as tile from './requestHandlers/tile';
 import * as word from './requestHandlers/word';
 import * as board from './requestHandlers/board';
+import * as game from './requestHandlers/game';
 
 const app = express();
 const port = 3000;
@@ -63,6 +64,15 @@ app.route('/words/play')
 
 app.route('/board')
     .get(board.get);
+
+app.route('/games')
+    .get(game.get_all)
+    .post(game.add_one)
+    .delete(game.remove_all);
+
+app.route('/games/:gameId')
+    .get(game.get_one)
+    .delete(game.remove_one);
 
 // Basic root route
 app.get('/', (req: Request, res: Response) => {
