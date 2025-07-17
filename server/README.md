@@ -18,14 +18,19 @@ The following routes are supported:
   - `/words` returns all words that have been placed
   - `/words/:wordId` looks up the word in the dictionary
   - `/board` lists all words that have been played
+  - `/games` lists all existing games
+  - `/games/:gameId` returns a specific game
 - DELETE :
   - `/badger/hand/:tileId` removes a tile by its ID from Badger's hand
+  - `/games` deletes all existing games
+  - `/games/:gameId` deletes a specific game
 - PATCH :
   - `/badger` updates Badger's info (namely animals they meet, and the score)
 - POST :
   - `/badger/hand` adds one or more tiles to the hand
   - `/words` records a new word (which may be valid or not)
   - `/words/play` places a word on the board and computes the score for Badger or the animal, respectively
+  - `/games` add a new game on a given board for a given player
 - PUT :
   - `/badger/hand` inits hand (like in the beginning of the game or if Badger wants to change all tiles)
 
