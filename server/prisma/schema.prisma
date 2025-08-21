@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id    Int    @id @default(1)
+  name  String @unique @default("Badger")
+  score Int    @default(0)
+
+  hand     Tile[]   @relation("PlayerHand")
+  animals  Animal[] @relation("PlayerAnimals")
+  words    Word[]   @relation("PlayerWords")
+  games    Game[]   @relation("PlayerGame")
+  gamesWon Game[]   @relation("GameWinnerPlayer")
+}
+
+model Animal {
+  id        Int    @id @default(autoincrement())
+  name      String @unique
+  speciesId Int
+  score     Int    @default(0)
+
+  species Species @relation(fields: [speciesId], references: [id])
+
+  playerId      Int?
+  player        Player?        @relation("PlayerAnimals", fields: [playerId], references: [id])
+  words         Word[]         @relation("AnimalWords")
+  animalsInGame AnimalInGame[]
+  gamesWon      Game[]         @relation("GameWinnerAnimal")
+}
+
+model Species {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  animals Animal[]
+}
+
+model Tile {
+  id          Int           @id @default(autoincrement())
+  letter      String
+  value       Int
+  tilesOnWord TilesOnWord[]
+
+  playerId    Int?
+  player      Player?      @relation("PlayerHand", fields: [playerId], references: [id])
+  placedTiles PlacedTile[]
+}
+
+model Word {
+  id          Int           @id @default(autoincrement())
+  isValid     Boolean?
+  tilesOnWord TilesOnWord[]
+
+  boardId Int?
+  board   Board? @relation(fields: [boardId], references: [id])
+
+  startX      Int?
+  startY      Int?
+  orientation Orientation?
+
+  score Int?
+
+  playerId Int?
+  player   Player? @relation("PlayerWords", fields: [playerId], references: [id])
+  animalId Int?
+  animal   Animal? @relation("AnimalWords", fields: [animalId], references: [id])
+  game     Game?   @relation(fields: [gameId], references: [id])
+  gameId   Int?
+}
+
+model TilesOnWord {
+  id       Int @id @default(autoincrement())
+  wordId   Int
+  tileId   Int
+  position Int
+
+  word Word @relation(fields: [wordId], references: [id])
+  tile Tile @relation(fields: [tileId], references: [id])
+}
+
+model Board {
+  id     Int @id @default(autoincrement())
+  width  Int @default(15)
+  height Int @default(15)
+
+  words   Word[]
+  tiles   PlacedTile[]
+  bonuses BoardBonus[]
+  games   Game[]
+}
+
+model BoardBonus {
+  id      Int       @id @default(autoincrement())
+  x       Int
+  y       Int
+  type    BonusType
+  boardId Int
+  board   Board     @relation(fields: [boardId], references: [id])
+
+  @@unique([boardId, x, y])
+}
+
+enum BonusType {
+  DL
+  TL
+  DW
+  TW
+}
+
+enum Orientation {
+  HORIZONTAL
+  VERTICAL
+}
+
+model PlacedTile {
+  id Int @id @default(autoincrement())
+  x  Int
+  y  Int
+
+  boardId Int
+  board   Board @relation(fields: [boardId], references: [id])
+
+  tileId Int
+  tile   Tile    @relation(fields: [tileId], references: [id])
+  isNew  Boolean @default(true)
+}
+
+model Game {
+  id        Int       @id @default(autoincrement())
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  isOver    Boolean   @default(false)
+
+  playerId Int
+  player   Player @relation("PlayerGame", fields: [playerId], references: [id])
+
+  board   Board @relation(fields: [boardId], references: [id])
+  boardId Int
+
+  animals AnimalInGame[]
+  words   Word[]
+
+  winnerPlayerId Int?
+  winnerPlayer   Player? @relation("GameWinnerPlayer", fields: [winnerPlayerId], references: [id])
+
+  winnerAnimalId Int?
+  winnerAnimal   Animal? @relation("GameWinnerAnimal", fields: [winnerAnimalId], references: [id])
+}
+
+model AnimalInGame {
+  id       Int @id @default(autoincrement())
+  gameId   Int
+  animalId Int
+  score    Int @default(0)
+
+  game   Game   @relation(fields: [gameId], references: [id])
+  animal Animal @relation(fields: [animalId], references: [id])
+
+  @@unique([gameId, animalId])
+}
