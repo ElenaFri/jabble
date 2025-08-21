@@ -84,17 +84,17 @@ function App() {
   return (
     <div style={{ textAlign: 'center' }}>
       <h1>Welcome to Jabble!</h1>
-      <button onClick={handleNewGame}>
-        New Game
-      </button>
-      <br />
-      <button onClick={handleListGames}>
-        Saved Games
-      </button>
-      <br />
-      <button onClick={handleQuit}>
-        Quit
-      </button>
+      <div className="button-group">
+        <button onClick={handleNewGame}>
+          New Game
+        </button>
+        <button onClick={handleListGames}>
+          Saved Games
+        </button>
+        <button onClick={handleQuit}>
+          Quit
+        </button>
+      </div>
     </div>
   );
 }
