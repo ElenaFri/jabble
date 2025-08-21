@@ -1,0 +1,92 @@
+@startuml
+skinparam packageStyle rectangle
+title Jabble Server Architecture
+
+package model {
+    package controls {
+        class Player {
+            + id: Int
+            + name: String
+            + score: Int
+            + animalsMet: Int
+            + playWord(word: scrabble.Word): Boolean
+            + inviteAnimal(animal: action.Animal): Boolean
+        }
+        class Game {
+            + players: List<Player>
+            + currentTurn: Int
+            + start(): void
+            + nextTurn(): void
+            + end(): void
+        }
+        class Score {
+            + calculateScore(player: Player): Int
+        }
+    }
+
+    package action {
+        class Animal {
+            + id: Int
+            + species: String
+            + hasAccepted: Boolean
+            + acceptInvitation(): void
+        }
+        class Path {
+            + waypoints: List<Position>
+            + calculatePath(start: Position, end: Position): Path
+        }
+        class Dialog {
+            + messages: List<String>
+            + startDialog(): void
+            + endDialog(): void
+        }
+    }
+
+    package scrabble {
+        class Dictionary {
+            + isValid(word: String): Boolean
+        }
+        class Word {
+            + text: String
+            + letters: List<Tile>
+            + calculatePoints(): Int
+        }
+        class Tile {
+            + char: Char
+            + value: Int
+        }
+        class Board {
+            + grid: Tile[][]
+            + placeWord(word: Word, pos: Position, dir: Direction): Boolean
+            + calculateScore(word: Word): Int
+        }
+        class Position {
+            + row: Int
+            + column: Int
+        }
+        enum Direction {
+            HORIZONTAL
+            VERTICAL
+        }
+    }
+}
+
+package controller {
+    class App {
+        + start(): void
+        + processTurn(): void
+        + end(): void
+    }
+    class GameController {
+        + handlePlayerMove(player: Player, word: scrabble.Word): Boolean
+        + handleAnimalInteraction(player: Player, animal: action.Animal): void
+        + validateMove(word: scrabble.Word): Boolean
+    }
+    class DialogController {
+        + initiateDialog(animal: action.Animal): void
+        + concludeDialog(): void
+    }
+}
+
+@enduml
+

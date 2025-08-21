@@ -17,4 +17,4 @@ _The points will be adjusted later._
 
 ## Status
 
-Initiation phase
+Development phase (server-side)
