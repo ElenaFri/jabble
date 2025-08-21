@@ -36,6 +36,23 @@ The following routes are supported:
 
 ## Problems
 
-As of now, Badger is the only one who manipulates tiles. A generic computer player should probably be introduced, to facilitate tile status attribution.
+As of now, **_Badger is the only one who manipulates tiles._** A generic computer player should probably be introduced, to facilitate tile status attribution. Anyway, animals must know how to play.
 
-Of course, score calculation is necessary, for both Badger and their adversaries.
+Of course, score calculation is necessary, for both Badger and their adversaries (**_upd_**: already implemented for Badger).
+
+The end of game has not been implemented yet either, but it should be a simpler task.
+
+## Algorithms
+
+A possible algorithm for automated animal play may be to :
+1. Look at the tiles in its possession;
+2. Make anagrams (**_problem: it might take heaps of time, so think of the euristics, see the rationale below_**), checking if those are in the dictionary. If yes, place the word in the very same manner Badger already does.
+
+As-for-now ideas for making anagrams:
+- start from a letter already on board
+  - Choose a specific place ?
+- work out from letters it has on hand
+  - Limited to 3-, 4-, 5-letter word? Maybe start with three letters for the sake of simplicity.
+  - Start with the maximum word length? But there will be even more resources consumed then.
+- use AI
+  - The obvious question is how?
