@@ -13,6 +13,7 @@ import * as game from './requestHandlers/game';
 
 const app = express();
 const port = 3000;
+import cors from 'cors';
 
 const ReqParams = object({
     player_id: optional(refine(string(), 'int', (value) => isInt(value))),
@@ -26,6 +27,9 @@ const validateParams = (req: Request, res: Response, next: NextFunction) => {
     assert(req.params, ReqParams);
     next();
 }
+
+// To enable client-side CORS requests
+app.use(cors());
 
 // Middleware to parse JSON bodies
 app.use(express.json());
