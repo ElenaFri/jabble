@@ -1,46 +1,19 @@
-# Getting Started with Create React App
+# Jabble game client part
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Server summarized
 
-## Available Scripts
+- Displays the current player's information, including their hand of tiles and score.
+- Shows the list of animals the player has met during the game.
+- Allows the player to view all available tiles and animals.
+- Lists all words that have been placed on the board and enables dictionary lookups for specific words.
+- Displays the current game board with all played words.
+- Enables users to start a new game, view existing games, and access details for a specific game.
+- Supports adding and removing tiles from the player's hand, as well as initializing or resetting the hand.
+- Allows players to record new words, place words on the board, and automatically calculates the score for each move.
+- Provides options to update player information and manage game sessions, including deleting games or specific tiles from the hand.
 
-In the project directory, you can run:
+**_Note that the server is to be completed yet, as Badger is the only one to be able to play, for the time being (even though it is possible to associate - manually - a word with an animal rather than with the human player)._**
 
-### `npm start`
+## Client implementation 
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+_just started, to be built in React + Typescript_
