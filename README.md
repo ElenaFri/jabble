@@ -17,4 +17,4 @@ _The points will be adjusted later._
 
 ## Status
 
-Development phase (server side)
+Development phase (started client-side)
