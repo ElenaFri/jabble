@@ -1,11 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+
+function JumpNRunGame({ game, onBack }: { game: any, onBack: () => void }) {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <h2>Jabble - Game #{game.id}</h2>
+      <p>
+        Move your character with the arrow keys.<br />
+        Bump into animals to challenge them at Scrabble!
+      </p>
+      <div style={{
+        width: 400, height: 200, background: '#14532d', margin: '2rem auto',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff'
+      }}>
+        [Jump'n'Run game area placeholder]
+      </div>
+      <button onClick={onBack}>Back to Home</button>
+    </div>
+  );
+}
 
 function App() {
   const [quit, setQuit] = useState(false);
   const [games, setGames] = useState<any[]>([]);
-  const [showGames, setShowGames] = useState(false);
   const [words, setWords] = useState<any[]>([]);
+  const [mode, setMode] = useState<'home' | 'games' | 'playing'>('home');
+  const [currentGame, setCurrentGame] = useState<any>(null);
+
+  useEffect(() => {
+    if (mode === 'games') {
+      fetch('http://localhost:3000/words')
+        .then(res => res.json())
+        .then(setWords)
+        .catch(() => setWords([]));
+    }
+  }, [mode]);
 
   const handleNewGame = async () => {
     try {
@@ -16,7 +45,8 @@ function App() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to create a new game');
-      alert(`New game created! Game ID: ${data.id}`);
+      setCurrentGame(data);
+      setMode('playing');
     } catch (err: any) {
       alert('Error creating a new game: ' + err.message);
     }
@@ -27,7 +57,7 @@ function App() {
       const response = await fetch('http://localhost:3000/games');
       const data = await response.json();
       setGames(data);
-      setShowGames(true);
+      setMode('games');
     } catch (err: any) {
       alert('Error fetching games: ' + err.message);
     }
@@ -46,7 +76,7 @@ function App() {
     );
   }
 
-  if (showGames) {
+  if (mode === 'games') {
     return (
       <div style={{ textAlign: 'center' }}>
         <h2>Saved Games</h2>
@@ -54,8 +84,10 @@ function App() {
           {games.map(game => {
             const wordsForGame = words.filter(word => word.gameId === game.id);
             return (
-              <li>
-                {
+              <li key={game.id}>
+                Game #{game.id}
+                {' — '}
+                Saved on {
                   (game.endedAt || game.startedAt)
                     ? `${new Date(game.endedAt || game.startedAt).toLocaleDateString('fr-FR', {
                         day: '2-digit',
@@ -69,15 +101,27 @@ function App() {
                     : 'N/A'
                 }
                 {' — '}
-                {game.player?.score ?? 'N/A'} points,
-                {' '}
+                {game.player?.score ?? 'N/A'} points
+                {' — '}
                 {wordsForGame.length} words placed
               </li>
             );
           })}
         </ul>
-        <button onClick={() => setShowGames(false)}>Back</button>
+        <button onClick={() => setMode('home')}>Back</button>
       </div>
+    );
+  }
+
+  if (mode === 'playing' && currentGame) {
+    return (
+      <JumpNRunGame
+        game={currentGame}
+        onBack={() => {
+          setCurrentGame(null);
+          setMode('home');
+        }}
+      />
     );
   }
 
